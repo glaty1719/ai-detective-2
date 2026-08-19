@@ -22,7 +22,7 @@ dist.zip
 project.config
 
 # ─── Editor & IDE ─────────────────────────────────────────────────────────────
-.vscode/*
+.vscode/
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/tasks.json
