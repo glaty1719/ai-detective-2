@@ -67,6 +67,10 @@ export class Game extends Scene {
         });
         this.events.on('quit-game', () => {
             TTSService.getInstance().stop();
+            AudioManager.getInstance().stopVoice();
+            if (this.scene.isActive('UIScene')) {
+                this.scene.stop('UIScene');
+            }
             this.scene.start('MainMenu');
         });
 
@@ -74,10 +78,16 @@ export class Game extends Scene {
         this.events.once('shutdown', () => {
             TTSService.getInstance().stop();
             AudioManager.getInstance().stopVoice();
+            if (this.scene.isActive('UIScene')) {
+                this.scene.stop('UIScene');
+            }
         });
         this.events.once('destroy', () => {
             TTSService.getInstance().stop();
             AudioManager.getInstance().stopVoice();
+            if (this.scene.isActive('UIScene')) {
+                this.scene.stop('UIScene');
+            }
         });
 
         // Start Level 1 (Smart Home)
@@ -451,36 +461,115 @@ export class Game extends Scene {
         // Voiceover Victory
         TTSService.getInstance().speak(subMsg, { voKey: isLastLevel ? 'vo_victory_master' : level.victoryVO });
 
-        // Next Place Button (Large Green Arrow Button)
-        const nextBtn = this.add.container(0, 215);
-        const btnBg = this.add.graphics();
-        btnBg.fillStyle(0x22c55e, 1);
-        btnBg.fillRoundedRect(-160, -35, 320, 70, 22);
-        btnBg.lineStyle(4, 0xffffff, 1);
-        btnBg.strokeRoundedRect(-160, -35, 320, 70, 22);
+        // Buttons: Intermediate levels get [QUIT] + [NEXT PLACE ➔], Last level gets only [QUIT]
+        if (isLastLevel) {
+            // Only Quit button on final level completion
+            const quitBtn = this.add.container(0, 215);
+            const btnBg = this.add.graphics();
+            btnBg.fillStyle(0xef4444, 1);
+            btnBg.fillRoundedRect(-160, -35, 320, 70, 22);
+            btnBg.lineStyle(4, 0xffffff, 1);
+            btnBg.strokeRoundedRect(-160, -35, 320, 70, 22);
 
-        const btnLabel = isLastLevel ? "PLAY AGAIN 🔄" : "NEXT PLACE ➔";
-        const btnText = this.add.text(0, 0, btnLabel, {
-            fontFamily: 'Arial Black', fontSize: '26px', color: '#ffffff', stroke: '#15803d', strokeThickness: 3
-        }).setOrigin(0.5);
+            const btnText = this.add.text(0, 0, "QUIT 🚪", {
+                fontFamily: 'Arial Black', fontSize: '26px', color: '#ffffff', stroke: '#991b1b', strokeThickness: 3
+            }).setOrigin(0.5);
 
-        nextBtn.add([btnBg, btnText]);
-        this.victoryModal.add(nextBtn);
+            quitBtn.add([btnBg, btnText]);
+            this.victoryModal.add(quitBtn);
 
-        btnBg.setInteractive({
-            hitArea: new Phaser.Geom.Rectangle(-160, -35, 320, 70),
-            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-            useHandCursor: true
-        });
+            btnBg.setInteractive({
+                hitArea: new Phaser.Geom.Rectangle(-160, -35, 320, 70),
+                hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+                useHandCursor: true
+            });
 
-        btnBg.on('pointerdown', () => {
-            this.audioPlay('click');
-            if (isLastLevel) {
-                this.session.startLevel(0);
-            } else {
+            btnBg.on('pointerover', () => {
+                this.tweens.add({ targets: quitBtn, scale: 1.06, duration: 120, ease: 'Power1' });
+            });
+            btnBg.on('pointerout', () => {
+                this.tweens.add({ targets: quitBtn, scale: 1.0, duration: 120, ease: 'Power1' });
+            });
+            btnBg.on('pointerdown', () => {
+                this.audioPlay('click');
+                TTSService.getInstance().stop();
+                AudioManager.getInstance().stopVoice();
+                if (this.scene.isActive('UIScene')) {
+                    this.scene.stop('UIScene');
+                }
+                this.scene.start('MainMenu');
+            });
+        } else {
+            // Intermediate Level: [QUIT] and [NEXT PLACE ➔]
+            // 1. Quit Button (Left)
+            const quitBtn = this.add.container(-160, 215);
+            const quitBg = this.add.graphics();
+            quitBg.fillStyle(0xef4444, 1);
+            quitBg.fillRoundedRect(-135, -34, 270, 68, 20);
+            quitBg.lineStyle(4, 0xffffff, 1);
+            quitBg.strokeRoundedRect(-135, -34, 270, 68, 20);
+
+            const quitText = this.add.text(0, 0, "QUIT 🚪", {
+                fontFamily: 'Arial Black', fontSize: '24px', color: '#ffffff', stroke: '#991b1b', strokeThickness: 3
+            }).setOrigin(0.5);
+
+            quitBtn.add([quitBg, quitText]);
+            this.victoryModal.add(quitBtn);
+
+            quitBg.setInteractive({
+                hitArea: new Phaser.Geom.Rectangle(-135, -34, 270, 68),
+                hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+                useHandCursor: true
+            });
+
+            quitBg.on('pointerover', () => {
+                this.tweens.add({ targets: quitBtn, scale: 1.06, duration: 120, ease: 'Power1' });
+            });
+            quitBg.on('pointerout', () => {
+                this.tweens.add({ targets: quitBtn, scale: 1.0, duration: 120, ease: 'Power1' });
+            });
+            quitBg.on('pointerdown', () => {
+                this.audioPlay('click');
+                TTSService.getInstance().stop();
+                AudioManager.getInstance().stopVoice();
+                if (this.scene.isActive('UIScene')) {
+                    this.scene.stop('UIScene');
+                }
+                this.scene.start('MainMenu');
+            });
+
+            // 2. Next Place Button (Right)
+            const nextBtn = this.add.container(160, 215);
+            const nextBg = this.add.graphics();
+            nextBg.fillStyle(0x22c55e, 1);
+            nextBg.fillRoundedRect(-135, -34, 270, 68, 20);
+            nextBg.lineStyle(4, 0xffffff, 1);
+            nextBg.strokeRoundedRect(-135, -34, 270, 68, 20);
+
+            const nextText = this.add.text(0, 0, "NEXT PLACE ➔", {
+                fontFamily: 'Arial Black', fontSize: '23px', color: '#ffffff', stroke: '#15803d', strokeThickness: 3
+            }).setOrigin(0.5);
+
+            nextBtn.add([nextBg, nextText]);
+            this.victoryModal.add(nextBtn);
+
+            nextBg.setInteractive({
+                hitArea: new Phaser.Geom.Rectangle(-135, -34, 270, 68),
+                hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+                useHandCursor: true
+            });
+
+            nextBg.on('pointerover', () => {
+                this.tweens.add({ targets: nextBtn, scale: 1.06, duration: 120, ease: 'Power1' });
+            });
+            nextBg.on('pointerout', () => {
+                this.tweens.add({ targets: nextBtn, scale: 1.0, duration: 120, ease: 'Power1' });
+            });
+            nextBg.on('pointerdown', () => {
+                this.audioPlay('click');
                 this.session.nextLevel();
-            }
-        });
+            });
+        }
 
         // Entrance scale
         this.victoryModal.setScale(0.7);

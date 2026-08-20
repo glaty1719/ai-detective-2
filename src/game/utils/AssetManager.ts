@@ -138,10 +138,31 @@ export class AssetManager {
         {
             // Empty Star
             const g = scene.make.graphics({ x: 0, y: 0 });
-            g.fillStyle(0x94a3b8, 0.4);
+            g.fillStyle(0x0f172a, 0.25);
             g.fillCircle(30, 30, 26);
-            g.lineStyle(4, 0x64748b, 1);
+            g.lineStyle(3, 0x64748b, 0.8);
             g.strokeCircle(30, 30, 26);
+
+            // Empty Star Silhouette (exact same dimensions as filled star)
+            g.fillStyle(0x64748b, 0.5);
+            const cx = 30, cy = 30, spikes = 5, outerR = 18, innerR = 8;
+            let rot = (Math.PI / 2) * 3;
+            let step = Math.PI / spikes;
+            g.beginPath();
+            g.moveTo(cx, cy - outerR);
+            for (let i = 0; i < spikes; i++) {
+                let x = cx + Math.cos(rot) * outerR;
+                let y = cy + Math.sin(rot) * outerR;
+                g.lineTo(x, y);
+                rot += step;
+                x = cx + Math.cos(rot) * innerR;
+                y = cy + Math.sin(rot) * innerR;
+                g.lineTo(x, y);
+                rot += step;
+            }
+            g.closePath();
+            g.fillPath();
+
             g.generateTexture('hud_star_empty', 60, 60);
             g.destroy();
         }

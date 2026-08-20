@@ -37,6 +37,10 @@ export class MainMenu extends Scene {
         TTSService.getInstance().stop();
         AudioManager.getInstance().stopVoice();
 
+        if (this.scene.isActive('UIScene')) {
+            this.scene.stop('UIScene');
+        }
+
         this.events.once('shutdown', () => {
             TTSService.getInstance().stop();
             AudioManager.getInstance().stopVoice();
